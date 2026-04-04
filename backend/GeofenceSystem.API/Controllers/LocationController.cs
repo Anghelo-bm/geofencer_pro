@@ -53,7 +53,7 @@ namespace GeofenceSystem.API.Controllers
         {
             // Agrupar por UserId y tomar la más reciente
             var latestLocations = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(
-                dbContext.LocationPings
+                dbContext.LocationHistories
                     .GroupBy(p => p.UserId)
                     .Select(g => g.OrderByDescending(p => p.Timestamp).FirstOrDefault())
             );
