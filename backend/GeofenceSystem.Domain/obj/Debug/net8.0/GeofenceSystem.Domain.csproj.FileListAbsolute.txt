@@ -1,0 +1,12 @@
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Domain\bin\Debug\net8.0\GeofenceSystem.Domain.deps.json
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Domain\bin\Debug\net8.0\GeofenceSystem.Domain.dll
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Domain\bin\Debug\net8.0\GeofenceSystem.Domain.pdb
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Domain\obj\Debug\net8.0\GeofenceSystem.Domain.csproj.AssemblyReference.cache
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Domain\obj\Debug\net8.0\GeofenceSystem.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Domain\obj\Debug\net8.0\GeofenceSystem.Domain.AssemblyInfoInputs.cache
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Domain\obj\Debug\net8.0\GeofenceSystem.Domain.AssemblyInfo.cs
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Domain\obj\Debug\net8.0\GeofenceSystem.Domain.csproj.CoreCompileInputs.cache
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Domain\obj\Debug\net8.0\GeofenceSystem.Domain.dll
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Domain\obj\Debug\net8.0\refint\GeofenceSystem.Domain.dll
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Domain\obj\Debug\net8.0\GeofenceSystem.Domain.pdb
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Domain\obj\Debug\net8.0\ref\GeofenceSystem.Domain.dll

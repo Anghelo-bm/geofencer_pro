@@ -1,0 +1,4 @@
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Domain\obj\Release\net8.0\GeofenceSystem.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Domain\obj\Release\net8.0\GeofenceSystem.Domain.AssemblyInfoInputs.cache
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Domain\obj\Release\net8.0\GeofenceSystem.Domain.AssemblyInfo.cs
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Domain\obj\Release\net8.0\GeofenceSystem.Domain.csproj.CoreCompileInputs.cache

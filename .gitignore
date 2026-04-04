@@ -1,0 +1,27 @@
+# General
+.vs/
+.idea/
+.vscode/
+node_modules/
+*.log
+
+# Backend (.NET)
+backend/bin/
+backend/obj/
+backend/*.user
+backend/*.userosscache
+backend/*.suo
+
+# Mobile (Flutter)
+mobile/.dart_tool/
+mobile/.packages
+mobile/build/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/android/local.properties
+
+# Web Admin (React/Vite)
+web_admin/dist/
+web_admin/build/
+web_admin/node_modules/
+web_admin/.env
