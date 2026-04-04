@@ -115,13 +115,17 @@ if (app.Environment.IsDevelopment())
 
 using (var scope = app.Services.CreateScope())
 {
-    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    context.Database.EnsureCreated();
+    // var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    // context.Database.EnsureCreated(); // SUPABASE PGBOUNCER CRASHES HERE (Status 139). SCHEMA IS ALREADY CREATED.
     
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
-    if (await userManager.FindByIdAsync("admin") == null)
-    {
-        await userManager.CreateAsync(new User { Id = "admin", UserName = "admin", Email = "admin@example.com" });
+    try {
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+        if (await userManager.FindByIdAsync("admin") == null)
+        {
+            await userManager.CreateAsync(new User { Id = "admin", UserName = "admin", Email = "admin@example.com" });
+        }
+    } catch (Exception ex) {
+        Console.WriteLine($"Auth Setup skipped: {ex.Message}");
     }
 }
 
