@@ -1,0 +1,14 @@
+﻿  Determinando los proyectos que se van a restaurar...
+  Todos los proyectos est├ín actualizados para la restauraci├│n.
+  GeofenceSystem.Domain -> C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Domain\bin\Debug\net8.0\GeofenceSystem.Domain.dll
+  GeofenceSystem.Application -> C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Application\bin\Debug\net8.0\GeofenceSystem.Application.dll
+  GeofenceSystem.Infrastructure -> C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Infrastructure\bin\Debug\net8.0\GeofenceSystem.Infrastructure.dll
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.API\Controllers\LocationController.cs(56,27): error CS1061: "ApplicationDbContext" no contiene una definici├│n para "LocationPings" ni un m├®todo de extensi├│n accesible "LocationPings" que acepte un primer argumento del tipo "ApplicationDbContext" (┬┐falta alguna directiva using o una referencia de ensamblado?) [C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.API\GeofenceSystem.API.csproj]
+
+ERROR al compilar.
+
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.API\Controllers\LocationController.cs(56,27): error CS1061: "ApplicationDbContext" no contiene una definici├│n para "LocationPings" ni un m├®todo de extensi├│n accesible "LocationPings" que acepte un primer argumento del tipo "ApplicationDbContext" (┬┐falta alguna directiva using o una referencia de ensamblado?) [C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.API\GeofenceSystem.API.csproj]
+    0 Advertencia(s)
+    1 Errores
+
+Tiempo transcurrido 00:00:01.27

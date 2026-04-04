@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  final String baseUrl = "https://whole-taxes-rule.loca.lt/api"; // IP mágica para hablar con Docker desde Android
+  final String baseUrl = "https://geofencer-api.onrender.com/api"; // Servidor en Render 24/7
   String? _token;
 
   void setToken(String token) => _token = token;

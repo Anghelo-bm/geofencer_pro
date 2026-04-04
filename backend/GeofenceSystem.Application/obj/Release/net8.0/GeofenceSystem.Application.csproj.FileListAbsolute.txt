@@ -1,0 +1,16 @@
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Application\bin\Release\net8.0\GeofenceSystem.Application.deps.json
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Application\bin\Release\net8.0\GeofenceSystem.Application.dll
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Application\bin\Release\net8.0\GeofenceSystem.Application.pdb
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Application\bin\Release\net8.0\GeofenceSystem.Domain.dll
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Application\bin\Release\net8.0\GeofenceSystem.Domain.pdb
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Application\obj\Release\net8.0\GeofenceSystem.Application.csproj.AssemblyReference.cache
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Application\obj\Release\net8.0\GeofenceSystem.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Application\obj\Release\net8.0\GeofenceSystem.Application.AssemblyInfoInputs.cache
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Application\obj\Release\net8.0\GeofenceSystem.Application.AssemblyInfo.cs
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Application\obj\Release\net8.0\GeofenceSystem.Application.csproj.CoreCompileInputs.cache
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Application\obj\Release\net8.0\GeofenceSystem.Application.sourcelink.json
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Application\obj\Release\net8.0\Geofence.711DE037.Up2Date
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Application\obj\Release\net8.0\GeofenceSystem.Application.dll
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Application\obj\Release\net8.0\refint\GeofenceSystem.Application.dll
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Application\obj\Release\net8.0\GeofenceSystem.Application.pdb
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Application\obj\Release\net8.0\ref\GeofenceSystem.Application.dll

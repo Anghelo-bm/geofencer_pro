@@ -54,7 +54,7 @@ function App() {
           lon: simPosRef.current.lon + 0.0002
         };
         try {
-          await fetch('http://localhost:5001/api/location/ping', {
+          await fetch('https://geofencer-api.onrender.com/api/location/ping', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
@@ -75,7 +75,7 @@ function App() {
     fetchGeofences();
     fetchRecentEvents();
 
-    const backendUrl = "http://localhost:5001";
+    const backendUrl = "https://geofencer-api.onrender.com";
     
     // 2. SignalR Setup
     const connection = new signalR.HubConnectionBuilder()
@@ -118,7 +118,7 @@ function App() {
   }, []);
 
   const fetchGeofences = () => {
-    fetch('http://localhost:5001/api/geofence')
+    fetch('https://geofencer-api.onrender.com/api/geofence')
       .then(res => res.json())
       .then(data => setGeofences(data))
       .catch(err => {
@@ -128,7 +128,7 @@ function App() {
   };
 
   const fetchRecentEvents = () => {
-    fetch('http://localhost:5001/api/event?limit=20')
+    fetch('https://geofencer-api.onrender.com/api/event?limit=20')
       .then(res => res.json())
       .then(data => {
         const eventTypes = ["Enter", "Exit", "OutsideTooLong", "SuspiciousMovement"];
@@ -153,7 +153,7 @@ function App() {
         const name = prompt("Nombre de la Geocerca:", `Zona ${geofences.length + 1}`);
         if (!name) { layer.remove(); return; }
 
-        const res = await fetch('http://localhost:5001/api/geofence', {
+        const res = await fetch('https://geofencer-api.onrender.com/api/geofence', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name: name, description: 'Creada desde Dashboard', wkt: wkt })
@@ -171,7 +171,7 @@ function App() {
   const deleteGeofence = async (id) => {
     if (!window.confirm("¿Eliminar esta geocerca?")) return;
     try {
-      const res = await fetch(`http://localhost:5001/api/geofence/${id}`, { method: 'DELETE' });
+      const res = await fetch(`https://geofencer-api.onrender.com/api/geofence/${id}`, { method: 'DELETE' });
       if (res.ok) fetchGeofences();
     } catch (err) {
       console.error(err);

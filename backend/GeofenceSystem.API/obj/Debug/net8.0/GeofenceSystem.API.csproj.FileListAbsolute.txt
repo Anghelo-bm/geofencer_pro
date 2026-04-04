@@ -79,3 +79,4 @@ C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceS
 C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.API\obj\Debug\net8.0\GeofenceSystem.API.pdb
 C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.API\obj\Debug\net8.0\GeofenceSystem.API.genruntimeconfig.cache
 C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.API\obj\Debug\net8.0\ref\GeofenceSystem.API.dll
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.API\obj\Debug\net8.0\GeofenceSystem.API.sourcelink.json

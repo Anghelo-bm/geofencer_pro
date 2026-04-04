@@ -10,3 +10,4 @@ C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceS
 C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Domain\obj\Debug\net8.0\refint\GeofenceSystem.Domain.dll
 C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Domain\obj\Debug\net8.0\GeofenceSystem.Domain.pdb
 C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Domain\obj\Debug\net8.0\ref\GeofenceSystem.Domain.dll
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Domain\obj\Debug\net8.0\GeofenceSystem.Domain.sourcelink.json

@@ -16,3 +16,4 @@ C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceS
 C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Infrastructure\obj\Debug\net8.0\refint\GeofenceSystem.Infrastructure.dll
 C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Infrastructure\obj\Debug\net8.0\GeofenceSystem.Infrastructure.pdb
 C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Infrastructure\obj\Debug\net8.0\ref\GeofenceSystem.Infrastructure.dll
+C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Infrastructure\obj\Debug\net8.0\GeofenceSystem.Infrastructure.sourcelink.json

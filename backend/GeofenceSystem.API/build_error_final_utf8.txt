@@ -1,0 +1,12 @@
+﻿  Determinando los proyectos que se van a restaurar...
+  Todos los proyectos est├ín actualizados para la restauraci├│n.
+  GeofenceSystem.Domain -> C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Domain\bin\Debug\net8.0\GeofenceSystem.Domain.dll
+  GeofenceSystem.Application -> C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Application\bin\Debug\net8.0\GeofenceSystem.Application.dll
+  GeofenceSystem.Infrastructure -> C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.Infrastructure\bin\Debug\net8.0\GeofenceSystem.Infrastructure.dll
+  GeofenceSystem.API -> C:\Users\Anghelo\.gemini\antigravity\scratch\geofencing_system\backend\GeofenceSystem.API\bin\Debug\net8.0\GeofenceSystem.API.dll
+
+Compilaci├│n correcta.
+    0 Advertencia(s)
+    0 Errores
+
+Tiempo transcurrido 00:00:01.15
