@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using GeofenceSystem.Application.Interfaces;
+using GeofenceSystem.Domain.Entities;
 using GeofenceSystem.Infrastructure.Data;
 using GeofenceSystem.API.Hubs;
 using Microsoft.AspNetCore.Mvc;
