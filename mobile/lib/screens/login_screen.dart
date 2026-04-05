@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:geofence_app/screens/map_screen.dart';
+import 'package:geofence_app/screens/tracker_screen.dart';
 import 'package:geofence_app/screens/admin_dashboard_screen.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -45,8 +46,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 title: 'Entrar como Administrador',
                 subtitle: 'Ver mapa global y gestionar',
                 color: Colors.indigo,
-                onTap: () {
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const AdminDashboardScreen()));
+                onTap: () async {
+                  // Si estaba rastreando como vehículo, lo detenemos
+                  final service = FlutterBackgroundService();
+                  if (await service.isRunning()) {
+                    service.invoke("stopService");
+                  }
+                  if (context.mounted) {
+                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const AdminDashboardScreen()));
+                  }
                 },
               ),
               
@@ -59,10 +67,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 subtitle: 'Activar rastreador GPS',
                 color: Colors.teal,
                 onTap: () async {
-                  // Solicitar permisos básicos antes de ir a MapScreen
-                  await Permission.locationWhenInUse.request();
                   if (context.mounted) {
-                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MapScreen()));
+                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const TrackerScreen()));
                   }
                 },
               ),

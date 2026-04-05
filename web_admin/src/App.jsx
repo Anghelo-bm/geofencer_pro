@@ -4,11 +4,8 @@ import { EditControl } from 'react-leaflet-draw';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
-import { 
-  Shield, Map as MapIcon, Settings, Bell, BarChart3, User, 
-  Navigation, AlertTriangle, Trash2, Crosshair, Zap, Activity
-} from 'lucide-react';
 import * as signalR from '@microsoft/signalr';
+import { Shield, Map as MapIcon, Bell, Trash2, Crosshair, Navigation, Activity } from 'lucide-react';
 
 // Fix Default Leaflet Icon Issue
 delete L.Icon.Default.prototype._getIconUrl;
@@ -18,10 +15,14 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-// Component to handle map center changes
-function ChangeView({ center, zoom }) {
+// Auto-center map component
+function ChangeView({ center, zoom, forceUpdate }) {
   const map = useMap();
-  if (center) map.setView(center, zoom || map.getZoom());
+  useEffect(() => {
+    if (center && center.length === 2 && center[0] && center[1]) {
+      map.setView(center, zoom || map.getZoom());
+    }
+  }, [center, map, zoom, forceUpdate]);
   return null;
 }
 
@@ -29,69 +30,52 @@ function App() {
   const [locations, setLocations] = useState({});
   const [geofences, setGeofences] = useState([]);
   const [events, setEvents] = useState([]);
-  const [mapCenter, setMapCenter] = useState([4.711, -74.072]);
-  const [connectionStatus, setConnectionStatus] = useState('Disconnected');
-  const [activeTab, setActiveTab] = useState('live');
-  const [isSimulating, setIsSimulating] = useState(false);
-
+  const [mapCenter, setMapCenter] = useState([-17.7833, -63.1821]); // Santa Cruz de la Sierra, Bolivia
+  const [forceUpdate, setForceUpdate] = useState(0); 
   const connectionRef = useRef(null);
-  const simulationRef = useRef(null);
-  const simPosRef = useRef({ lat: 4.711, lon: -74.072 });
-
-  const toggleSimulation = () => {
-    if (isSimulating) {
-      clearInterval(simulationRef.current);
-      setIsSimulating(false);
-    } else {
-      setIsSimulating(true);
-      // Actualizamos la posición inicial al centro seleccionado para probar mejor
-      simPosRef.current = { lat: mapCenter[0], lon: mapCenter[1] };
-      
-      simulationRef.current = setInterval(async () => {
-        // Mover el punto un poco hacia el noreste
-        simPosRef.current = {
-          lat: simPosRef.current.lat + 0.0005,
-          lon: simPosRef.current.lon + 0.0002
-        };
-        try {
-          await fetch('https://geofencer-api.onrender.com/api/location/ping', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-              deviceId: 'HONORANY-SIM',
-              latitude: simPosRef.current.lat,
-              longitude: simPosRef.current.lon,
-              speed: 12.5,
-              accuracy: 5
-            })
-          });
-        } catch(e) {}
-      }, 3000); // Enviar 'ping' cada 3 segundos
-    }
-  };
 
   useEffect(() => {
-    // 1. Initial Load
+    // Traducir los botones flotantes de Leaflet Draw
+    if (L.drawLocal) {
+      L.drawLocal.draw.toolbar.actions.text = '✅ GUARDAR ZONA';
+      L.drawLocal.draw.toolbar.actions.title = 'Terminar de dibujar';
+      L.drawLocal.draw.toolbar.undo.text = 'Deshacer último punto';
+      L.drawLocal.draw.toolbar.undo.title = 'Eliminar el último punto dibujado';
+      L.drawLocal.draw.handlers.polygon.tooltip.start = 'Haz clic para empezar a dibujar';
+      L.drawLocal.draw.handlers.polygon.tooltip.cont = 'Haz clic para añadir otro punto';
+      L.drawLocal.draw.handlers.polygon.tooltip.end = 'Haz clic en el PRIMER punto para cerrar la zona, o en "Guardar Zona"';
+      
+      L.drawLocal.edit.toolbar.actions.save.title = 'Guardar los cambios';
+      L.drawLocal.edit.toolbar.actions.save.text = '✅ GUARDAR CAMBIOS';
+      L.drawLocal.edit.toolbar.actions.cancel.title = 'Cancelar edición';
+      L.drawLocal.edit.toolbar.actions.cancel.text = 'Cancelar';
+      L.drawLocal.edit.handlers.edit.tooltip.text = 'Arrastra los puntos para modificar la zona.';
+      L.drawLocal.edit.handlers.edit.tooltip.subtext = 'Haz clic en GUARDAR CAMBIOS abajo cuando termines.';
+    }
+
     fetchGeofences();
-    fetchRecentEvents();
     fetchActiveLocations();
+    fetchRecentEvents();
 
     const backendUrl = "https://geofencer-api.onrender.com";
     
-    // 2. SignalR Setup
+    // Connect to WebSockets for live Tracking
     const connection = new signalR.HubConnectionBuilder()
       .withUrl(`${backendUrl}/monitoringHub`)
       .withAutomaticReconnect()
       .build();
 
     connection.on("ReceiveLocationUpdate", (data) => {
+      // Ignorar ubicaciones falsas
+      if (data.userId === "admin" || data.userId === "Unknown") return;
+
       setLocations(prev => {
-        // Auto-centrar en el vehículo la primera vez o siempre
-        setMapCenter([data.latitude, data.longitude]);
+        // En este nuevo diseño, no lo auto-centramos todo el tiempo para dejar dibujar
+        // Sólo guardamos la ubicación
         return { ...prev, [data.userId]: data };
       });
-      
-      // If there's an event tied to this location update, add it to events
+
+      // Registrar evento si cruzó una frontera
       if (data.event && data.event !== "Ninguno") {
         const newEvent = {
           id: Math.random().toString(36).substr(2, 9),
@@ -100,40 +84,27 @@ function App() {
           geofenceName: data.geofenceName || 'Zona Detectada',
           timestamp: new Date().toISOString()
         };
-        setEvents(prev => [newEvent, ...prev].slice(0, 50));
+        setEvents(prev => [newEvent, ...prev].slice(0, 15));
       }
     });
 
-    connection.start()
-      .then(() => {
-        setConnectionStatus('Connected');
-        console.log('SignalR Connected');
-        connection.invoke("JoinMonitoringGroup", "admin");
-      })
-      .catch(err => {
-        setConnectionStatus('Error');
-        console.log('SignalR Error: ', err);
-      });
+    connection.start().then(() => {
+      connection.invoke("JoinMonitoringGroup", "admin");
+    }).catch(err => console.log('SignalR Error: ', err));
 
     connectionRef.current = connection;
-
-    return () => {
-      if (connectionRef.current) connectionRef.current.stop();
-    };
+    return () => { if (connectionRef.current) connectionRef.current.stop(); };
   }, []);
 
   const fetchGeofences = () => {
     fetch('https://geofencer-api.onrender.com/api/geofence')
       .then(res => res.json())
       .then(data => setGeofences(data))
-      .catch(err => {
-        console.error("Error loading geofences", err);
-        setConnectionStatus('Backend Error');
-      });
+      .catch(err => console.error(err));
   };
 
   const fetchRecentEvents = () => {
-    fetch('https://geofencer-api.onrender.com/api/event?limit=20')
+    fetch('https://geofencer-api.onrender.com/api/event?limit=15')
       .then(res => res.json())
       .then(data => {
         const eventTypes = ["Enter", "Exit", "OutsideTooLong", "SuspiciousMovement"];
@@ -144,7 +115,7 @@ function App() {
         }));
         setEvents(formattedData);
       })
-      .catch(err => console.error("Error loading events", err));
+      .catch(err => console.error(err));
   };
 
   const fetchActiveLocations = () => {
@@ -153,15 +124,28 @@ function App() {
       .then(data => {
         if (Array.isArray(data)) {
           const locs = {};
-          data.forEach(item => { locs[item.userId] = item; });
-          setLocations(prev => ({ ...prev, ...locs }));
-          // Auto center if there's at least one location and map hasn't been moved much
-          if (data.length > 0) {
-            setMapCenter([data[0].latitude || data[0].lat, data[0].longitude || data[0].lon]);
+          data.forEach(item => {
+            if (item.userId === "admin" || item.userId === "Unknown") return;
+            item.latitude = item.latitude || item.lat;
+            item.longitude = item.longitude || item.lon;
+            locs[item.userId] = item; 
+          });
+          setLocations(locs);
+          const validLocs = Object.values(locs);
+          if (validLocs.length > 0) {
+            setMapCenter([validLocs[0].latitude, validLocs[0].longitude]);
           }
         }
       })
-      .catch(err => console.error("Error fetching locations", err));
+      .catch(err => console.error(err));
+  };
+
+  const centerOnUser = () => {
+    const validLocs = Object.values(locations);
+    if (validLocs.length > 0) {
+      setMapCenter([validLocs[0].latitude, validLocs[0].longitude]);
+      setForceUpdate(prev => prev + 1); // Dispara el render effect de cámara
+    }
   };
 
   const onCreated = async (e) => {
@@ -171,235 +155,202 @@ function App() {
       const closed = [...latlngs, latlngs[0]];
       const wkt = `POLYGON((${closed.map(ll => `${ll.lng} ${ll.lat}`).join(', ')}))`;
 
-      try {
-        const name = prompt("Nombre de la Geocerca:", `Zona ${geofences.length + 1}`);
-        if (!name) { layer.remove(); return; }
+      const name = prompt("Nombre de esta zona (Ej. Zona Peligrosa, Casa):", "Nueva Zona");
+      if (!name) { layer.remove(); return; }
 
+      try {
         const res = await fetch('https://geofencer-api.onrender.com/api/geofence', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: name, description: 'Creada desde Dashboard', wkt: wkt })
+          body: JSON.stringify({ name: name, description: 'Creada en Web', wkt: wkt })
         });
         if (res.ok) {
           fetchGeofences();
-          layer.remove();
         }
-      } catch (err) {
-        console.error(err);
-      }
+        layer.remove();
+      } catch (err) { console.error(err); }
     }
   };
 
-  const deleteGeofence = async (id) => {
-    if (!window.confirm("¿Eliminar esta geocerca?")) return;
+  const onEdited = async (e) => {
+    const layers = e.layers;
+    layers.eachLayer(async (layer) => {
+      const id = layer.options.geofenceId || layer.options.id;
+      if (!id) return;
+      
+      const latlngs = layer.getLatLngs()[0];
+      const closed = [...latlngs, latlngs[0]];
+      const wkt = `POLYGON((` + closed.map(ll => `${ll.lng} ${ll.lat}`).join(', ') + `))`;
+      
+      try {
+        await fetch(`https://geofencer-api.onrender.com/api/geofence/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ wkt })
+        });
+      } catch (err) { console.error(err); }
+    });
+    // Al final refescamos
+    setTimeout(fetchGeofences, 1000);
+  };
+
+  const deleteGeofence = async (id, name) => {
+    if (!window.confirm(`¿Desea borrar la zona "${name}"?`)) return;
     try {
       const res = await fetch(`https://geofencer-api.onrender.com/api/geofence/${id}`, { method: 'DELETE' });
       if (res.ok) fetchGeofences();
-    } catch (err) {
-      console.error(err);
-    }
+    } catch (err) { console.error(err); }
   };
 
   const getGeofencePositions = (wkt) => {
     if (!wkt) return [];
     try {
-      // Usar regex para extraer todo lo que esté entre los paréntesis dobles
       const match = wkt.match(/\(\((.*?)\)\)/);
       if (!match) return [];
-      
-      const coords = match[1].split(',');
-      return coords.map(c => {
+      return match[1].split(',').map(c => {
         const parts = c.trim().split(/\s+/);
-        const lng = parseFloat(parts[0]);
-        const lat = parseFloat(parts[1]);
-        if (isNaN(lat) || isNaN(lng)) throw new Error("Invalid coordinate");
-        return [lat, lng];
+        return [parseFloat(parts[1]), parseFloat(parts[0])];
       });
-    } catch(e) {
-      console.error("WKT Parse error:", e);
-      return [];
-    }
+    } catch(e) { return []; }
   };
 
   const focusOnGeofence = (wkt) => {
-    const positions = getGeofencePositions(wkt);
-    if (positions.length > 0) {
-      setMapCenter(positions[0]);
+    const coords = getGeofencePositions(wkt);
+    if(coords.length > 0) {
+      // Tomamos el primer punto que delimita la zona para enfocar
+      setMapCenter([coords[0][0], coords[0][1]]);
+      setForceUpdate(prev => prev + 1);
     }
   };
 
   return (
-    <div className="dashboard">
-      <aside className="sidebar">
-        <div className="logo">
-          <Shield size={32} />
-          <span>GEOFENCER</span>
-        </div>
-        
-        <nav style={{ flex: 1 }}>
-          <div 
-            className={`nav-item ${activeTab === 'live' ? 'active' : ''}`}
-            onClick={() => setActiveTab('live')}
-          >
-            <MapIcon size={20} /> Mapa en Vivo
-          </div>
-          <div 
-            className={`nav-item ${activeTab === 'zones' ? 'active' : ''}`}
-            onClick={() => setActiveTab('zones')}
-          >
-            <Shield size={20} /> Admin Zonas
-          </div>
-          <div className="nav-item"><AlertTriangle size={20} /> Alertas Críticas</div>
-          <div className="nav-item"><BarChart3 size={20} /> Analíticas</div>
-          <div className="nav-item"><Settings size={20} /> Configuración</div>
-        </nav>
-
-        <div className="glass-card" style={{ padding: '1rem', marginTop: 'auto' }}>
-          <div className="status-indicator">
-            <div className={`pulse ${connectionStatus === 'Connected' ? '' : 'error'}`} 
-                 style={{backgroundColor: connectionStatus === 'Connected' ? 'var(--success)' : 'var(--error)'}}></div>
-            <span>Sistema: {connectionStatus}</span>
-          </div>
-        </div>
-      </aside>
-
-      <main className="main-content">
-        <header className="top-bar">
-          <div>
-            <h2>Panel de Control Geoespacial</h2>
-            <p style={{fontSize: '0.8rem', color: 'var(--text-muted)'}}>Monitoreo de activos en tiempo real</p>
-          </div>
+    <div className="dashboard-layout light-theme">
+      {/* MAP BACKGROUND */}
+      <div className="map-background">
+        <MapContainer center={mapCenter} zoom={16} zoomControl={false} scrollWheelZoom={true}>
+          <ChangeView center={mapCenter} zoom={16} forceUpdate={forceUpdate} />
           
-          <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-            
-            <button 
-              onClick={toggleSimulation}
-              style={{
-                background: isSimulating ? 'var(--error)' : 'var(--success)',
-                color: 'white',
-                border: 'none',
-                padding: '0.6rem 1.2rem',
-                borderRadius: '8px',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                boxShadow: `0 0 15px ${isSimulating ? 'rgba(239, 68, 68, 0.4)' : 'rgba(34, 197, 94, 0.4)'}`
-              }}
-            >
-              {isSimulating ? 'Detener Simulación' : 'Simular HONORANY'}
-            </button>
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; OpenStreetMap'
+          />
+          
+          <FeatureGroup>
+            <EditControl
+              position='topleft'
+              onCreated={onCreated}
+              onEdited={onEdited}
+              draw={{ circle: false, rectangle: false, circlemarker: false, marker: false, polyline: false }}
+            />
+            {geofences.map(gf => {
+               const positions = getGeofencePositions(gf.wkt);
+               if (!positions || positions.length < 3) return null;
+               return (
+                 <Polygon 
+                    key={gf.id} 
+                    positions={positions} 
+                    pathOptions={{ geofenceId: gf.id, id: gf.id, color: "#0ea5e9", fillColor: "#0ea5e9", fillOpacity: 0.15, weight: 2, dashArray: "5, 10" }}
+                 >
+                   <Popup><b style={{color: '#0f172a'}}>{gf.name}</b></Popup>
+                 </Polygon>
+               );
+            })}
+          </FeatureGroup>
 
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Admin Principal</div>
-              <div style={{ fontSize: '0.7rem', color: 'var(--success)' }}>ONLINE</div>
+          {Object.values(locations).map((loc, i) => (
+            <Marker key={i} position={[loc.latitude, loc.longitude]}>
+              <Popup>
+                 <div style={{color: '#0f172a', fontWeight: 'bold', fontSize: '14px'}}>
+                   🚙 Activo<br/>
+                   <span style={{color: '#10b981'}}>{(loc.speed * 3.6 || 0).toFixed(1)} km/h</span>
+                 </div>
+              </Popup>
+            </Marker>
+          ))}
+        </MapContainer>
+      </div>
+
+      {/* OVERLAYS UI */}
+      <div className="ui-overlay">
+        
+        {/* HEADER GLASS */}
+        <header className="glass-header">
+          <div className="header-brand">
+            <div className="brand-icon-wrapper"><Shield className="brand-icon" size={24} /></div>
+            <div className="brand-text">
+              <h1>GEOFENCER PRO</h1>
+              <p>Centro de Control Táctico</p>
             </div>
-            <div style={{ width: 45, height: 45, background: 'linear-gradient(45deg, #333, #555)', borderRadius: '14px', border: '1px solid var(--border)' }}></div>
           </div>
+          <button className="glass-btn primary" onClick={centerOnUser}>
+            <Crosshair size={18} />
+            <span>Ubicar Vehículo</span>
+          </button>
         </header>
 
-        <div className="map-container">
-          <MapContainer center={mapCenter} zoom={15} zoomControl={false}>
-            <ChangeView center={mapCenter} />
-            <TileLayer
-              url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-              attribution='&copy; OpenStreetMap contributors'
-            />
-            
-            <FeatureGroup>
-              <EditControl
-                position='topleft'
-                onCreated={onCreated}
-                draw={{ circle: false, rectangle: false, circlemarker: false, marker: false, polyline: false }}
-              />
-              {geofences.map(gf => {
-                 const positions = getGeofencePositions(gf.wkt);
-                 if (!positions || positions.length < 3) return null;
-                 
-                 return (
-                   <Polygon 
-                      key={gf.id} 
-                      positions={positions} 
-                      pathOptions={{ color: "#6366f1", fillColor: "#6366f1", fillOpacity: 0.15, weight: 2 }}
-                   >
-                     <Popup>
-                       <strong>{gf.name}</strong><br/>
-                       {gf.description}
-                     </Popup>
-                   </Polygon>
-                 );
-              })}
-            </FeatureGroup>
-
-            {Object.values(locations).map((loc, i) => (
-              <Marker key={i} position={[loc.latitude, loc.longitude]}>
-                <Popup>
-                  <div style={{color: '#000'}}>
-                    <strong>{loc.userId}</strong><br/>
-                    Velocidad: {(loc.speed * 3.6 || 0).toFixed(1)} km/h<br/>
-                    <small>{new Date(loc.timestamp).toLocaleTimeString()}</small>
-                  </div>
-                </Popup>
-              </Marker>
-            ))}
-          </MapContainer>
-
-          <div className="right-panel">
-            {/* Geofence List */}
-            <div className="glass-card geofence-list-panel">
-              <div className="panel-header">
-                <h3><Shield size={18} color="var(--accent)" /> Geocercas Activas</h3>
-                <span className="badge badge-accent">{geofences.length}</span>
+        {/* CSS GRID BOTTOM/SIDE PANELS */}
+        <div className="panels-wrapper">
+          
+          {/* ZONAS PANEL */}
+          <div className="glass-panel">
+            <div className="panel-header">
+              <div className="panel-title">
+                <MapIcon size={18} className="icon-blue" />
+                <h2>Zonas Activas</h2>
               </div>
-              <div className="scroll-area">
-                {geofences.length === 0 && <p style={{color: 'var(--text-muted)', fontSize: '0.8rem'}}>No hay zonas definidas.</p>}
-                {geofences.map(gf => (
-                  <div key={gf.id} className="list-item" onClick={() => focusOnGeofence(gf.wkt)}>
-                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                      <div>
-                        <div style={{fontWeight: 'bold', fontSize: '0.9rem'}}>{gf.name}</div>
-                        <div style={{fontSize: '0.7rem', color: 'var(--text-muted)'}}>Polígono Activado</div>
-                      </div>
-                      <div style={{display: 'flex', gap: '0.5rem'}}>
-                        <Crosshair size={16} color="var(--text-muted)" onClick={(e) => { e.stopPropagation(); focusOnGeofence(gf.wkt); }} />
-                        <Trash2 size={16} color="var(--error)" onClick={(e) => { e.stopPropagation(); deleteGeofence(gf.id); }} />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <span className="badge">{geofences.length}</span>
             </div>
-
-            {/* Event Log */}
-            <div className="glass-card event-panel">
-              <div className="panel-header">
-                <h3><Activity size={18} color="var(--warning)" /> Registro de Eventos</h3>
-                <Zap size={16} color="var(--warning)" />
-              </div>
-              <div className="scroll-area">
-                {events.length === 0 && <p style={{color: 'var(--text-muted)', fontSize: '0.8rem'}}>Esperando telemetría...</p>}
-                {events.map((ev, i) => (
-                  <div key={i} className={`list-item event-item ${ev.type?.toLowerCase()}`}>
-                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'start'}}>
-                      <div>
-                        <span className={`badge ${ev.type === 'Enter' ? 'badge-success' : 'badge-error'}`}>
-                          {ev.type === 'Enter' ? 'ENTRADA' : 'SALIDA'}
-                        </span>
-                        <div style={{fontWeight: 'bold', fontSize: '0.9rem', marginTop: '0.4rem'}}>{ev.userId}</div>
-                        <div style={{fontSize: '0.75rem', color: 'var(--text-main)'}}>{ev.geofenceName}</div>
-                      </div>
-                      <div style={{fontSize: '0.7rem', color: 'var(--text-muted)'}}>
-                        {new Date(ev.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                      </div>
-                    </div>
+            <div className="glass-scroll-list">
+              {geofences.map(gf => (
+                <div key={gf.id} className="glass-card">
+                  <div className="card-info">
+                    <h3>{gf.name}</h3>
+                    <p>Monitoreo estricto</p>
                   </div>
-                ))}
-              </div>
+                  <div className="card-actions">
+                    <button className="action-btn icon-btn" onClick={() => focusOnGeofence(gf.wkt)}>
+                      <Navigation size={16} />
+                    </button>
+                    <button className="action-btn icon-btn danger" onClick={() => deleteGeofence(gf.id, gf.name)}>
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {geofences.length === 0 && <div className="empty-state">No hay zonas definidas. Usa el lápiz verde en el mapa para delimitar un perímetro de seguridad.</div>}
             </div>
           </div>
+
+          {/* ALERTAS PANEL */}
+          <div className="glass-panel alerts-panel">
+             <div className="panel-header">
+              <div className="panel-title">
+                <Activity size={18} className="icon-red" />
+                <h2>Registro en Tiempo Real</h2>
+              </div>
+              {events.length > 0 && <span className="pulse-dot"></span>}
+            </div>
+            <div className="glass-scroll-list">
+              {events.map((ev, i) => (
+                <div key={i} className={`glass-card alert border-${ev.type === 'Enter' ? 'green' : 'red'}`}>
+                  <div className={`alert-icon-circle ${ev.type === 'Enter' ? 'bg-green' : 'bg-red'}`}>
+                    <Bell size={14} />
+                  </div>
+                  <div className="card-info">
+                    <h4>{ev.type === 'Enter' ? 'Ingreso Autorizado' : 'SALIDA DE PERÍMETRO'}</h4>
+                    <p>{ev.geofenceName}</p>
+                  </div>
+                  <div className="alert-time">
+                    {new Date(ev.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                  </div>
+                </div>
+              ))}
+              {events.length === 0 && <div className="empty-state">Sistema activo. Monitoreando anomalías e infracciones de perímetro.</div>}
+            </div>
+          </div>
+
         </div>
-      </main>
+      </div>
     </div>
   );
 }

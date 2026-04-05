@@ -78,35 +78,46 @@ class _MapScreenState extends State<MapScreen> {
       }
     }
 
+    // Solución para Doze Mode (Ignorar optimizaciones de batería)
+    if (Platform.isAndroid) {
+      var batteryStatus = await Permission.ignoreBatteryOptimizations.status;
+      if (!batteryStatus.isGranted) {
+        await Permission.ignoreBatteryOptimizations.request();
+      }
+    }
+
     // Asegurarse de que el servicio Foreground se encienda
     final service = FlutterBackgroundService();
     if (!(await service.isRunning())) {
       service.startService();
     }
 
-    Geolocator.getPositionStream(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.bestForNavigation,
-        distanceFilter: 2, // Actualizar cada 2 metros
-      )
-    ).listen((Position pos) {
+    // Únicamente escuchamos los eventos que emite la sesión nativa de fondo
+    service.on('update').listen((event) {
+      if (event == null) return;
+      double lat = event['lat'] as double;
+      double lon = event['lon'] as double;
+      double speed = (event['speed'] as num?)?.toDouble() ?? 0.0;
+      
       setState(() {
-        _currentPosition = pos;
+        _currentPosition = Position(
+          latitude: lat,
+          longitude: lon,
+          timestamp: DateTime.now(),
+          accuracy: 0.0,
+          altitude: 0.0,
+          heading: 0.0,
+          speed: speed,
+          speedAccuracy: 0.0,
+          altitudeAccuracy: 0.0,
+          headingAccuracy: 0.0,
+        );
       });
       
-      if (!_hasCenteredInitially && _currentPosition != null) {
+      if (!_hasCenteredInitially) {
         _centerMapOnUser();
         _hasCenteredInitially = true;
       }
-      
-      // Enviar al servidor Docker en tiempo real
-      ApiService().sendLocation(
-        pos.latitude, 
-        pos.longitude, 
-        pos.speed, 
-        pos.accuracy, 
-        _deviceId
-      );
     });
   }
   

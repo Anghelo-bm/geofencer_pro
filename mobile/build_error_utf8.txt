@@ -1,0 +1,92 @@
+﻿
+Running Gradle task 'assembleRelease'...                        
+Warning: The plugin flutter_local_notifications requires Android SDK version 35 or higher.
+For more information about build configuration, see https://flutter.dev/to/review-gradle-config.
+flutter : Your project is 
+configured to compile 
+against Android SDK 34, 
+but the following 
+plugin(s) require to be 
+compiled against a higher 
+Android SDK version:
+En línea: 1 Carácter: 1
++ flutter build apk > 
+build_error.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
+    + CategoryInfo         
+     : NotSpecified: (You  
+  r project is...id SDK    
+ version::String) [], R    
+emoteException
+    + FullyQualifiedErrorI 
+   d : NativeCommandError
+ 
+- flutter_local_notificatio
+ns compiles against 
+Android SDK 35
+Fix this issue by 
+compiling against the 
+highest Android SDK 
+version (they are backward 
+compatible).
+Add the following to C:\Use
+rs\Anghelo\.gemini\antigrav
+ity\scratch\geofencing_syst
+em\mobile\android\app\build
+.gradle:
+
+    android {
+        compileSdk = 35
+        ...
+    }
+
+lib/screens/tracker_screen.
+dart:182:127: Error: 
+Member not found: 'black'.
+                          
+style: TextStyle(color: 
+_isTracking ? 
+Colors.greenAccent : 
+Colors.redAccent, 
+fontWeight: 
+FontWeight.black, 
+fontSize: 22)
+                           
+                           
+                           
+         ^^^^^
+Target 
+kernel_snapshot_program 
+failed: Exception
+
+
+FAILURE: Build failed with 
+an exception.
+
+* What went wrong:
+Execution failed for task '
+:app:compileFlutterBuildRel
+ease'.
+> Process 'command 'C:\flut
+ter\bin\flutter.bat'' 
+finished with non-zero 
+exit value 1
+
+* Try:
+> Run with --stacktrace 
+option to get the stack 
+trace.
+> Run with --info or 
+--debug option to get more 
+log output.
+> Run with --scan to get 
+full insights.
+> Get more help at 
+https://help.gradle.org.
+
+BUILD FAILED in 10s
+Running Gradle task 'assembleRelease'...                           11,3s
+Gradle task 
+assembleRelease failed 
+with exit code 1

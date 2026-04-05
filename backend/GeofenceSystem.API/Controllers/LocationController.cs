@@ -28,7 +28,7 @@ namespace GeofenceSystem.API.Controllers
         {
             try
             {
-                var userId = "admin"; // By-pass por testeo
+                var userId = request.DeviceId ?? "Dispositivo_General";
                 var location = new Point(request.Longitude, request.Latitude) { SRID = 4326 };
                 
                 // Si la BD falla, este endpoint lanzará error, garantizando consistencia

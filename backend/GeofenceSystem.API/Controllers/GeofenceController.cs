@@ -70,6 +70,29 @@ namespace GeofenceSystem.API.Controllers
             }
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateGeofence(Guid id, [FromBody] UpdateGeofenceRequest request)
+        {
+            var userId = "admin"; // Bypass
+            var geofence = await _context.Geofences.FirstOrDefaultAsync(g => g.Id == id && g.OwnerId == userId);
+            if (geofence == null) return NotFound();
+
+            try
+            {
+                if (!string.IsNullOrEmpty(request.Wkt))
+                {
+                    geofence.Boundary = _wktReader.Read(request.Wkt);
+                }
+                
+                await _context.SaveChangesAsync();
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = "Error al actualizar WKT: " + ex.Message });
+            }
+        }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteGeofence(Guid id)
         {
@@ -85,4 +108,5 @@ namespace GeofenceSystem.API.Controllers
     }
 
     public record CreateGeofenceRequest(string Name, string Description, string Wkt, double? Radius);
+    public record UpdateGeofenceRequest(string Wkt);
 }

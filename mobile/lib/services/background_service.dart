@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:geolocator_android/geolocator_android.dart';
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:geofence_app/services/api_service.dart'; 
+import 'dart:io';
+import 'package:geofence_app/services/api_service.dart';
 
 Future<void> initializeBackgroundService() async {
   final service = FlutterBackgroundService();
@@ -63,42 +65,61 @@ void onStart(ServiceInstance service) async {
     });
   }
 
-  service.on('stopService').listen((event) {
-    service.stopSelf();
-  });
-
-  // Temporizador para leer GPS cada 10 segundos
-  Timer.periodic(const Duration(seconds: 10), (timer) async {
-    if (service is AndroidServiceInstance) {
-      if (!(await service.isForegroundService())) {
-        return;
-      }
+  String deviceId = "Unknown-Bg";
+  try {
+    final deviceInfo = DeviceInfoPlugin();
+    if (Platform.isAndroid) {
+      final androidInfo = await deviceInfo.androidInfo;
+      deviceId = androidInfo.id;
+    } else if (Platform.isIOS) {
+      final iosInfo = await deviceInfo.iosInfo;
+      deviceId = iosInfo.identifierForVendor ?? "Unknown-Bg";
     }
+  } catch (e) {
+    print("Error getting device ID in background: $e");
+  }
 
+  if (service is AndroidServiceInstance) {
+    service.setAsForegroundService(); // Asegurar foreground inmediatamente
+  }
+
+  Geolocator.getPositionStream(
+    locationSettings: AndroidSettings(
+      accuracy: LocationAccuracy.best,
+      distanceFilter: 5, // Cada 5 metros, excelente balance en vivo/batería
+      forceLocationManager: true, // Crucial para Huawei/Honor
+      foregroundNotificationConfig: const ForegroundNotificationConfig(
+        notificationText: "Rastreo optimizado en segundo plano",
+        notificationTitle: "Geofencer Profesional",
+        enableWakeLock: true, // WakeLock controlado para no dormirse
+        setOngoing: true,
+      ),
+    ),
+  ).listen((Position position) async {
+    // FILTRO PROFESIONAL DE SALTOS (JUMPS): 
+    // Si la precisión es muy mala (> 20 metros de margen de error), lo ignoramos para evitar falsas salidas de geocerca.
+    if (position.accuracy > 20.0) return;
     try {
-      Position position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.bestForNavigation);
-
-      // Usar ApiService existente para enviar la ubicación real a la Web
       await apiService.sendLocation(
         position.latitude,
         position.longitude,
         position.speed,
         position.accuracy,
-        'HONORANY-REAL', // Dispositivo Real para diferenciar del simulador
+        deviceId, // Uso del ID real en segundo plano
       );
-
-      print("✅ Ubicación enviada en segundo plano: \${position.latitude}, \${position.longitude}");
+      print("✅ GPS Background Activado: ${position.latitude}, ${position.longitude} (Stream fluid)");
       
-      service.invoke(
-        'update',
-        {
-          "lat": position.latitude,
-          "lon": position.longitude,
-        },
-      );
+      service.invoke('update', {
+        "lat": position.latitude, 
+        "lon": position.longitude,
+        "speed": position.speed
+      });
     } catch (e) {
-      print("❌ Error en GPS de fondo: \$e");
+      print("❌ Error subiendo GPS de fondo (Stream): $e");
     }
+  });
+
+  service.on('stopService').listen((event) {
+    service.stopSelf();
   });
 }
