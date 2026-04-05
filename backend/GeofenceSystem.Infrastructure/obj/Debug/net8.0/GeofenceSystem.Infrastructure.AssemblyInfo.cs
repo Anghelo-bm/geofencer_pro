@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GeofenceSystem.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e1a2fce3de3c71755de2702dba7c78dbcc2ecc50")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5b4917a75dfe1732721e52204879ead1b8fc32cc")]
 [assembly: System.Reflection.AssemblyProductAttribute("GeofenceSystem.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GeofenceSystem.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

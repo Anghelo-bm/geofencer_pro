@@ -84,10 +84,14 @@ function App() {
       .build();
 
     connection.on("ReceiveLocationUpdate", (data) => {
-      setLocations(prev => ({ ...prev, [data.userId]: data }));
+      setLocations(prev => {
+        // Auto-centrar en el vehículo la primera vez o siempre
+        setMapCenter([data.latitude, data.longitude]);
+        return { ...prev, [data.userId]: data };
+      });
       
       // If there's an event tied to this location update, add it to events
-      if (data.event) {
+      if (data.event && data.event !== "Ninguno") {
         const newEvent = {
           id: Math.random().toString(36).substr(2, 9),
           type: data.event,
