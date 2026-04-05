@@ -23,13 +23,16 @@ namespace GeofenceSystem.API.Controllers
             _hubContext = hubContext;
         }
 
+        // Caché en memoria para evitar caídas por la base de datos y sobrevivir a los F5
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, object> _activeLocations = new();
+
         [HttpPost("ping")]
         public async Task<IActionResult> Ping([FromBody] PingRequest request)
         {
             try
             {
-                // Bypass de usuario
                 var userId = "admin";
+                var deviceId = request.DeviceId ?? "Dispositivo";
 
                 var location = new Point(request.Longitude, request.Latitude) { SRID = 4326 };
                 
@@ -37,23 +40,26 @@ namespace GeofenceSystem.API.Controllers
 
                 try 
                 {
-                    // Procesa si entró o salió de un polígono registrado a "admin"
                     geofenceEvent = await _geofenceService.ProcessLocationUpdate(userId, location);
                 } 
                 catch (Exception dbEx) 
                 {
-                    // Log del error pero permitimos que el flujo continúe para que SignalR envíe los datos
                     Console.WriteLine($"[Geofence DB Error] {dbEx.Message}");
                 }
 
-                // Transmitimos a todos los monitores web (React) conectados en vivo 
-                await _hubContext.Clients.All.SendAsync("ReceiveLocationUpdate", new {
-                    userId = request.DeviceId ?? "Dispositivo",
+                var locationData = new {
+                    userId = deviceId,
                     latitude = request.Latitude,
                     longitude = request.Longitude,
                     speed = request.Speed,
-                    @event = geofenceEvent?.Type.ToString() ?? "Ninguno"
-                });
+                    @event = geofenceEvent?.Type.ToString() ?? "Ninguno",
+                    timestamp = DateTime.UtcNow
+                };
+
+                // Guardar en RAM para F5
+                _activeLocations[deviceId] = locationData;
+
+                await _hubContext.Clients.All.SendAsync("ReceiveLocationUpdate", locationData);
 
                 return Ok(new { 
                     Status = "Recibido", 
@@ -62,29 +68,15 @@ namespace GeofenceSystem.API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Error = ex.Message, Inner = ex.InnerException?.Message, StackTrace = ex.StackTrace });
+                return StatusCode(500, new { Error = ex.Message });
             }
         }
 
         [HttpGet("all")]
-        public async Task<IActionResult> GetAllActiveLocations([FromServices] ApplicationDbContext dbContext)
+        public IActionResult GetAllActiveLocations()
         {
-            // Agrupar por UserId y tomar la más reciente
-            var latestLocations = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(
-                dbContext.LocationHistories
-                    .GroupBy(p => p.UserId)
-                    .Select(g => g.OrderByDescending(p => p.Timestamp).FirstOrDefault())
-            );
-
-            var result = latestLocations.Where(l => l != null).Select(l => new {
-                userId = l!.UserId,
-                lat = l.Coordinate.Y,
-                lon = l.Coordinate.X,
-                speed = l.Speed,
-                timestamp = l.Timestamp
-            });
-
-            return Ok(result);
+            // Devolver directamente la RAM sin tocar la BD rota
+            return Ok(_activeLocations.Values);
         }
     }
 
