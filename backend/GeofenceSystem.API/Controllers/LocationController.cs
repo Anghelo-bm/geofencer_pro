@@ -20,6 +20,9 @@ namespace GeofenceSystem.API.Controllers
         public LocationController(IGeofenceService geofenceService, IHubContext<MonitoringHub> hubContext)
         {
             _geofenceService = geofenceService;
+            _hubContext = hubContext;
+        }
+
         [HttpPost("ping")]
         public async Task<IActionResult> Ping([FromBody] PingRequest request)
         {
