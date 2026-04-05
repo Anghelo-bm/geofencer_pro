@@ -25,27 +25,34 @@ namespace GeofenceSystem.API.Controllers
         [HttpPost("ping")]
         public async Task<IActionResult> Ping([FromBody] PingRequest request)
         {
-            // Bypass de usuario
-            var userId = "admin";
+            try
+            {
+                // Bypass de usuario
+                var userId = "admin";
 
-            var location = new Point(request.Longitude, request.Latitude) { SRID = 4326 };
-            
-            // Procesa si entró o salió de un polígono registrado a "admin"
-            var geofenceEvent = await _geofenceService.ProcessLocationUpdate(userId, location);
+                var location = new Point(request.Longitude, request.Latitude) { SRID = 4326 };
+                
+                // Procesa si entró o salió de un polígono registrado a "admin"
+                var geofenceEvent = await _geofenceService.ProcessLocationUpdate(userId, location);
 
-            // Transmitimos a todos los monitores web (React) conectados en vivo 
-            await _hubContext.Clients.All.SendAsync("ReceiveLocationUpdate", new {
-                userId = request.DeviceId ?? "Dispositivo",
-                latitude = request.Latitude,
-                longitude = request.Longitude,
-                speed = request.Speed,
-                @event = geofenceEvent?.Type.ToString()
-            });
+                // Transmitimos a todos los monitores web (React) conectados en vivo 
+                await _hubContext.Clients.All.SendAsync("ReceiveLocationUpdate", new {
+                    userId = request.DeviceId ?? "Dispositivo",
+                    latitude = request.Latitude,
+                    longitude = request.Longitude,
+                    speed = request.Speed,
+                    @event = geofenceEvent?.Type.ToString()
+                });
 
-            return Ok(new { 
-                Status = "Recibido", 
-                Event = geofenceEvent?.Type.ToString() ?? "Ninguno" 
-            });
+                return Ok(new { 
+                    Status = "Recibido", 
+                    Event = geofenceEvent?.Type.ToString() ?? "Ninguno" 
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Error = ex.Message, Inner = ex.InnerException?.Message, StackTrace = ex.StackTrace });
+            }
         }
 
         [HttpGet("all")]
