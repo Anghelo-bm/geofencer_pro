@@ -142,3 +142,4 @@ app.MapControllers();
 app.MapHub<GeofenceSystem.API.Hubs.MonitoringHub>("/monitoringHub");
 
 app.Run();
+// Trigger restart to reload Npgsql types
