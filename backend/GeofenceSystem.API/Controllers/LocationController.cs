@@ -32,8 +32,18 @@ namespace GeofenceSystem.API.Controllers
 
                 var location = new Point(request.Longitude, request.Latitude) { SRID = 4326 };
                 
-                // Procesa si entró o salió de un polígono registrado a "admin"
-                var geofenceEvent = await _geofenceService.ProcessLocationUpdate(userId, location);
+                GeofenceEvent? geofenceEvent = null;
+
+                try 
+                {
+                    // Procesa si entró o salió de un polígono registrado a "admin"
+                    geofenceEvent = await _geofenceService.ProcessLocationUpdate(userId, location);
+                } 
+                catch (Exception dbEx) 
+                {
+                    // Log del error pero permitimos que el flujo continúe para que SignalR envíe los datos
+                    Console.WriteLine($"[Geofence DB Error] {dbEx.Message}");
+                }
 
                 // Transmitimos a todos los monitores web (React) conectados en vivo 
                 await _hubContext.Clients.All.SendAsync("ReceiveLocationUpdate", new {
@@ -41,7 +51,7 @@ namespace GeofenceSystem.API.Controllers
                     latitude = request.Latitude,
                     longitude = request.Longitude,
                     speed = request.Speed,
-                    @event = geofenceEvent?.Type.ToString()
+                    @event = geofenceEvent?.Type.ToString() ?? "Ninguno"
                 });
 
                 return Ok(new { 
