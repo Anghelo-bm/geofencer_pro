@@ -74,6 +74,7 @@ function App() {
     // 1. Initial Load
     fetchGeofences();
     fetchRecentEvents();
+    fetchActiveLocations();
 
     const backendUrl = "https://geofencer-api.onrender.com";
     
@@ -144,6 +145,23 @@ function App() {
         setEvents(formattedData);
       })
       .catch(err => console.error("Error loading events", err));
+  };
+
+  const fetchActiveLocations = () => {
+    fetch('https://geofencer-api.onrender.com/api/location/all')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          const locs = {};
+          data.forEach(item => { locs[item.userId] = item; });
+          setLocations(prev => ({ ...prev, ...locs }));
+          // Auto center if there's at least one location and map hasn't been moved much
+          if (data.length > 0) {
+            setMapCenter([data[0].latitude || data[0].lat, data[0].longitude || data[0].lon]);
+          }
+        }
+      })
+      .catch(err => console.error("Error fetching locations", err));
   };
 
   const onCreated = async (e) => {

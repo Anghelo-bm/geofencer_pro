@@ -115,8 +115,8 @@ if (app.Environment.IsDevelopment())
 
 using (var scope = app.Services.CreateScope())
 {
-    // var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    // context.Database.EnsureCreated(); // SUPABASE PGBOUNCER CRASHES HERE (Status 139). SCHEMA IS ALREADY CREATED.
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    context.Database.EnsureCreated(); // Creación oficial usando Supabase IPv4 Session Pooler
     
     try {
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
