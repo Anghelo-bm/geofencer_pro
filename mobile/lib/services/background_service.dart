@@ -86,19 +86,18 @@ void onStart(ServiceInstance service) async {
   Geolocator.getPositionStream(
     locationSettings: AndroidSettings(
       accuracy: LocationAccuracy.best,
-      distanceFilter: 5, // Cada 5 metros, excelente balance en vivo/batería
+      distanceFilter: 0, // Enviar cada movimiento o actualización sin importar los metros para máximo tiempo real
       forceLocationManager: true, // Crucial para Huawei/Honor
       foregroundNotificationConfig: const ForegroundNotificationConfig(
-        notificationText: "Rastreo optimizado en segundo plano",
+        notificationText: "Rastreo continuo en segundo plano",
         notificationTitle: "Geofencer Profesional",
         enableWakeLock: true, // WakeLock controlado para no dormirse
         setOngoing: true,
       ),
     ),
   ).listen((Position position) async {
-    // FILTRO PROFESIONAL DE SALTOS (JUMPS): 
-    // Si la precisión es muy mala (> 20 metros de margen de error), lo ignoramos para evitar falsas salidas de geocerca.
-    if (position.accuracy > 20.0) return;
+    // FILTRO RELAJADO: Aceptar señal incluso si el GPS no es del todo exacto en interiores
+    if (position.accuracy > 500.0) return;
     try {
       await apiService.sendLocation(
         position.latitude,

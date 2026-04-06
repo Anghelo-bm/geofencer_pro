@@ -415,48 +415,119 @@ body {
   white-space: nowrap;
 }
 
+.leaflet-draw-actions a {
+  background: #334155 !important;
+  color: white !important;
+  font-weight: 800 !important;
+  padding: 12px 24px !important;
+  border-radius: 30px !important;
+  font-size: 0.9rem !important;
+  text-decoration: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  line-height: 1 !important;
+  transition: all 0.2s !important;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1) !important;
+}
+
+.leaflet-draw-actions a:hover {
+  transform: scale(1.05);
+}
+
+/* Guardar Zona (Finish) / Save (Edit) */
+.leaflet-draw-actions li:first-child a {
+  background: var(--success) !important;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4) !important;
+}
+
+/* Deshacer / Cancelar */
+.leaflet-draw-actions li:last-child a {
+  background: var(--text-muted) !important;
+}
+
+/* Solo mostrar el menú gigante en Edición, NO en Dibujo (lápiz) */
+.leaflet-draw-section:first-child .leaflet-draw-actions {
+  display: none !important;
+}
+
 
 /* ------------------------------------- */
 /* RESPONSIVE MÓVIL */
 /* ------------------------------------- */
 @media (max-width: 768px) {
   .dashboard-layout {
-    height: 100dvh; /* Evitar fallas browser bars */
+    height: 100dvh;
   }
 
   .glass-header {
-    margin: 1rem;
-    padding: 0.8rem;
-    border-radius: 16px;
+    margin: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 12px;
   }
 
-  .brand-icon-wrapper { padding: 8px; }
-  .brand-text h1 { font-size: 1.1rem; }
-  .brand-text p { font-size: 0.65rem; }
+  .brand-icon-wrapper { padding: 6px; }
+  .brand-text h1 { font-size: 0.9rem; }
+  .brand-text p { font-size: 0.55rem; }
 
-  .glass-btn { padding: 8px 12px; font-size: 0.8rem;}
-  .glass-btn span { display: none; } /* Ocultar texto en móvil para boton ubicar */
+  .glass-btn { padding: 6px; font-size: 0.75rem;}
+  .glass-btn span { display: none; }
 
-  /* IMPORTANTE: pointer-events: none aquí para que al scroll sobre el mapa no se bloquee por su contenedor */
+  /* Empujar paneles estrictamente al fondo con mínimo tamaño */
   .panels-wrapper {
     flex-direction: column;
     justify-content: flex-end;
-    padding: 1rem;
-    gap: 1rem;
-    overflow-y: auto;
-    max-height: 50vh; /* dar espacio al mapa arriba */
+    padding: 0.5rem;
+    gap: 5px;
     pointer-events: none; 
   }
 
-  /* Las tarjetas interceptan comandos de tap/pointer */
   .glass-panel {
     width: 100%;
-    border-radius: 20px;
-    max-height: 40vh; /* Las limitamos a la mitad de visibilidad para que el mapa resalte pero sea scrolleable */
+    border-radius: 12px;
+    max-height: 20vh; /* Extremadamente compacto, 20% altura máx */
     pointer-events: auto;
-    box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   }
 
-  /* Ajustar los controles de Leaflet en móvil para que no estorben */
-  .leaflet-draw-toolbar { margin-top: 80px !important; margin-left: 10px !important; }
+  .panel-header {
+    padding: 0.4rem 0.6rem;
+  }
+  .panel-title h2 { font-size: 0.85rem; margin-bottom: 0; }
+  .badge { padding: 2px 6px; font-size: 0.7rem; }
+
+  .glass-scroll-list {
+    padding: 0.3rem 0.5rem;
+    gap: 0.4rem;
+  }
+  
+  .glass-card { padding: 0.5rem; }
+  .card-info h3 { font-size: 0.85rem; margin-bottom: 2px; }
+  .card-info p { font-size: 0.65rem; }
+
+  /* Ajustar menú enorme al móvil moviéndolo a la parte SUPERIOR para evitar la barra de Safari */
+  .leaflet-draw-actions {
+    flex-direction: column !important;
+    top: 80px !important; /* Debajo de la cabecera */
+    bottom: auto !important; /* Remover el fondo */
+    width: 90vw !important;
+    border-radius: 20px !important;
+    padding: 5px !important;
+    gap: 5px !important;
+    z-index: 999999 !important; /* Asegurar visibilidad */
+  }
+
+  .leaflet-draw-actions[style*="display: block"] {
+    display: flex !important;
+  }
+
+  .leaflet-draw-actions a {
+    padding: 10px !important;
+    font-size: 0.8rem !important;
+    border-radius: 15px !important;
+  }
+
+  /* Ajustar los controles de Leaflet en móvil */
+  .leaflet-draw-toolbar { margin-top: 50px !important; margin-left: 10px !important; }
 }

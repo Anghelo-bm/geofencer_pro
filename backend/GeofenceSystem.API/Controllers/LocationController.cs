@@ -24,11 +24,19 @@ namespace GeofenceSystem.API.Controllers
         }
 
         [HttpPost("ping")]
-        public async Task<IActionResult> Ping([FromBody] PingRequest request)
+        public async Task<IActionResult> Ping([FromBody] PingRequest request, [FromServices] ApplicationDbContext dbContext)
         {
             try
             {
                 var userId = request.DeviceId ?? "Dispositivo_General";
+                
+                // Evitar Foreign Key Violation: Crear usuario fantasma si no existe
+                if (!dbContext.Users.Any(u => u.Id == userId))
+                {
+                    dbContext.Users.Add(new User { Id = userId, UserName = userId, Email = userId + "@gps.com" });
+                    await dbContext.SaveChangesAsync();
+                }
+
                 var location = new Point(request.Longitude, request.Latitude) { SRID = 4326 };
                 
                 // Si la BD falla, este endpoint lanzará error, garantizando consistencia
